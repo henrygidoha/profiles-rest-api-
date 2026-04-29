@@ -2,8 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.authentication import TokenAuthentication
+
 
 from profiles_api import serializer
+from profiles_api import models
+from profiles_api import permissions
+
 
 class HelloApiView(APIView):
     """Test API View"""
@@ -34,6 +39,7 @@ class HelloApiView(APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+    
     def put(self, request, pk=None):
         """Handle updating an object"""
         return Response({'method': 'PUT'})
@@ -93,3 +99,10 @@ class HelloViewSet(viewsets.ViewSet):
         """Handle removing an object"""
 
         return Response({'http_method': 'DELETE'})
+    
+class UserProfilesViewSet(viewsets.ModelViewSet):
+    """Handle creating and updating profiles"""
+    serializer_class = serializer.UserProfileSerializer #Xác định serializer class cho viewset, trong trường hợp này là UserProfileSerializer. Serializer này sẽ được sử dụng để chuyển đổi dữ liệu giữa các đối tượng UserProfile và định dạng JSON khi gửi và nhận dữ liệu qua API.
+    queryset = models.UserProfile.objects.all() #Lấy tất cả các đối tượng UserProfile từ cơ sở dữ liệu và gán cho queryset của viewset. Điều này cho phép viewset thực hiện các thao tác CRUD (Create, Read, Update, Delete) trên các đối tượng UserProfile thông qua API.
+    authentication_classes = (TokenAuthentication,) #Xác định lớp xác thực cho viewset, trong trường hợp này là TokenAuthentication. Điều này có nghĩa là người dùng cần cung cấp một token hợp lệ để truy cập vào các endpoint của viewset này.
+    permission_classes = (permissions.UpdateOwnProfile,) #Xác định lớp quyền hạn cho view
